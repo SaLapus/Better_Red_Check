@@ -1,0 +1,34 @@
+query Projects($pageSize: Int) {
+  projects(section: {id: 1}, page: { pageNumber: 1, pageSize: $pageSize}) {
+    totalPages
+    totalElements
+    content {
+      id
+      title
+
+      translationStatus
+
+      volumes {
+        content{
+          id
+          title
+          shortName
+          
+          fullUrl
+
+          chapters {
+            id
+            volumeId
+            title
+            publishDate
+          }
+          
+          staff {
+            nickname
+            activityName
+          }
+        }
+      }
+    }
+  }
+}

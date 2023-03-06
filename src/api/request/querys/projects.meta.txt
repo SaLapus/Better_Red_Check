@@ -1,0 +1,6 @@
+query Projects($sectionId: Int) {
+  projects(section: {id: $sectionId}, page: { pageNumber: 1, pageSize: 1}) {
+    totalPages
+    totalElements
+  }
+}
