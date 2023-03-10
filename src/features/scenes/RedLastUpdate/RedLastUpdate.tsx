@@ -26,8 +26,11 @@ export function RedLastUpdate(props: ComponentProps) {
             {
               title: "Последнее обновление",
               field: "date",
-              sorting: true,
-              defaultSort: "desc",
+              sorting: {
+                enabled: true,
+                default: "desc",
+                howToSort: "date",
+              },
               cellDataConverter: (time) => new Date(time).toLocaleDateString(),
             },
           ]}

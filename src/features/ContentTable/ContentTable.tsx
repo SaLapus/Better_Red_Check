@@ -6,23 +6,37 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 import * as React from "react";
-import { Order } from "./ContentHeader/ContentHeader";
 
 export interface IRowData {
   key: string;
 }
 
+export type Keys<O extends IRowData> = Extract<keyof O, string>;
+export type ObjectValue<O extends IRowData> = O[Keys<O>];
+
 export interface Column<RowData extends IRowData> {
   title: string;
   field: Keys<RowData>;
-  cellDataConverter?: (cellData: RowData[Keys<RowData>]) => string;
+  cellDataConverter?: (cellData: ObjectValue<RowData>) => string;
 
-  sorting?: boolean;
-  defaultSort?: Order<RowData>["dest"];
+  sorting?: {
+    enabled: boolean;
+    default?: "asc" | "desc";
+    howToSort?:
+      | "string"
+      | "number"
+      | "date"
+      | ((a: ObjectValue<RowData>, b: ObjectValue<RowData>) => boolean);
+  };
+
+  onClick?: (callback: (row: RowData) => void) => void;
+  onDoubleClick?: (callback: (row: RowData) => void) => void;
 }
 
-export type Keys<O extends IRowData> = Extract<keyof O, string>;
-export type ObjectValue<O extends IRowData> = O[Keys<O>];
+export interface Order<RowData extends IRowData> {
+  field: Keys<RowData>;
+  type: "asc" | "desc";
+}
 
 interface TableProps<RowData extends IRowData> {
   columns: Column<RowData>[];
@@ -33,25 +47,25 @@ export default function ContentTable<RowData extends IRowData>(
   props: TableProps<RowData>
 ) {
   const { columns, data } = props;
+  const fields = columns.map((col) => col.field);
 
-  const [order, setOrder] = React.useState<Order<RowData> | undefined>(
-    (() => {
-      const colToSortBy = columns.find((col) => !!col.defaultSort);
+  const [sortOrder, setSortOrder] = React.useState<Order<RowData> | undefined>(
+    () => {
+      const orderToSort = columns.find(
+        (col) => col.sorting?.enabled && col.sorting.default
+      );
 
-      if (!colToSortBy?.defaultSort) return;
-
-      if (colToSortBy)
-        return {
-          by: colToSortBy.field,
-          dest: colToSortBy.defaultSort,
-        };
-    })()
+      if (orderToSort?.sorting?.default)
+        return { field: orderToSort.field, type: orderToSort.sorting.default };
+    }
   );
 
   const headerColumns: HeaderProps<RowData> = {
     columns: columns.map(({ title, field }) => ({ title, field })),
-    order,
-    setOrder,
+    sort: {
+      order: sortOrder,
+      setOrder: setSortOrder,
+    },
   };
 
   return (
